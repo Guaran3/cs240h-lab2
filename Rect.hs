@@ -27,6 +27,11 @@ instance Eq Rect where
                  xMax r1 == xMax r2 &&
                  yMax r1 == yMax r2
 
+instance Ord Rect where
+    compare r1 r2
+        | hlbRect r1 > hlbRect r2 = GT
+        | hlbRect r1 < hlbRect r2 = LT
+        | otherwise               = EQ
 --creates MBR of a given quadrilateral from the file
 createRect :: [Int] -> Rect
 createRect [x1,y1,x2,y2,x3,y3,x4,y4] = Rect xmin ymin xmax ymax where

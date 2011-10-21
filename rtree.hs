@@ -11,9 +11,12 @@ import Data.Word
 type MBR = Rect 
 type LHV = Word32
 
+leafmax  = 4
+innermax = 4
+
 data NodeType = Inner | Outer | Object | Empty deriving (Show, Eq)
 
-data TNode = LNode LHV MBR [ARect]
+data TNode = LNode LHV MBR [Rect]
            | INode LHV MBR [TNode]
            deriving (Show)
 
@@ -29,16 +32,62 @@ getLHV :: TNode -> LHV
 getLHV (LNode a _ _) = a
 getLHV (INode a _ _) = a
 
+getMBR :: TNode -> MBR
+getMBR (LNode _ a _) = a
+getMBR (INode _ a _) = a
+
+
+getNodes :: TNode -> [TNode]
+getNodes (INode _ _ x) = x
+
+
 -- adds rectangle to a node
 addRect :: TNode -> Rect -> TNode
 addRect (INode _ _ _) _ = error "must be a leaf node to work"
 addRect (LNode large mbr list) rect = LNode (max large (hlbRect rect))
-                                            (getMBR mbr rect)
-                                            (insert rect list)
+                                            (createMBR mbr rect)
+                                            (LS.insert rect list)
 
+-- inserts into tree
+tinsert :: TNode -> Rect -> TNode
+tinsert n@(LNode lhv mbr list) rect
+    |(leafmax > (length list)) = refix $ (addRect n rect)
+    |otherwise = refix $ INode (max lhv (hlbRect rect)) (createMBR mbr rect)
+               [n, (LNode (hlbRect rect) rect [rect])]
+tinsert n@(INode lhv mbr list) rect = refix $
+    INode (max lhv (hlbRect rect)) (createMBR mbr rect)
+          (LS.insert (tinsert cnode rect) (LS.delete cnode list))
+    where
+        cnode = rmJust $ LS.find (\elem -> (getLHV elem) > (hlbRect rect))
+                              list
+        rmJust (Just elem) = elem
+        rmJust Nothing     = last list
 
+-- fixes the changing possible LHV and MBR values, may not be needed
+-- since there are no deletions
+refix :: TNode -> TNode
+refix (LNode lhv mbr list) = 
+    LNode (max lhv $ maximum [hlbRect x | x <- list])
+          (getMBR list)
+          list
+    where
+        getMBR = foldl (\x y -> createMBR x y) mbr 
+refix n@(INode lhv mbr list) 
+--    | (length $ children list) < (length list -1) * leafmax = 
+--        shuffle n
+--    | otherwise =
+       = INode lhv2 mbr2 list2
+    where 
+        lhv2 = foldl (\x y -> max x (getLHV y)) lhv list
+        mbr2 = foldl (\x y -> createMBR x $ getMBR y) mbr list
+        list2 = map refix list
 
+--shuffle :: [TNode] -> TNode -> TNode
+--shuffle ch@(x:xs) = 
+children :: TNode -> [TNode]
+children (INode _ _ list) = concat $ map getNodes list
 
+{-
 data Node = Node  { lhv    :: Word32
                   , ptr    :: Maybe [HTree]
                   , mbr    :: MBR
@@ -58,11 +107,11 @@ numChild = 4
 
 numLeaf :: Int
 numLeaf = 4
-
+-}
 --max number of intersecting rectangles.
 maxNum :: Word16
 maxNum = 4
-
+{-
 --returns a list of rectangles that intersect query window.
 search :: HTree -> Rect -> [Rect]
 search tree rect
@@ -98,7 +147,7 @@ getLHV list = maximum [lhv x | x <- list]
 getMBR :: [Node] -> MBR
 getMBR (a:[]) = mbr a
 getMBR (a:as) = createMBR (mbr a) (getMBR as)
-
+-}
 
 
 
