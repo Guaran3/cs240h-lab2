@@ -52,11 +52,10 @@ addRect (LNode large mbr list) rect = LNode (max large (hlbRect rect))
 tinsert :: TNode -> Rect -> TNode
 tinsert n@(LNode lhv mbr list) rect
     |(leafmax > (length list)) = refix $ (addRect n rect)
-    |otherwise = refix $ INode (max lhv (hlbRect rect)) (createMBR mbr rect)
+    |otherwise = refix $ INode lhv mbr 
                [n, (LNode (hlbRect rect) rect [rect])]
 tinsert n@(INode lhv mbr list) rect = refix $
-    INode (max lhv (hlbRect rect)) (createMBR mbr rect)
-          (LS.insert (tinsert cnode rect) (LS.delete cnode list))
+    INode lhv mbr (LS.insert (tinsert cnode rect) (LS.delete cnode list))
     where
         cnode = rmJust $ LS.find (\elem -> (getLHV elem) > (hlbRect rect))
                               list
@@ -73,6 +72,7 @@ refix (LNode lhv mbr list) =
     where
         getMBR = foldl (\x y -> createMBR x y) mbr 
 refix n@(INode lhv mbr list) 
+--    this part should be doing the s to s+1 merging stuff, not working right now
 --    | (length $ children list) < (length list -1) * leafmax = 
 --        shuffle n
 --    | otherwise =
@@ -87,30 +87,8 @@ refix n@(INode lhv mbr list)
 children :: TNode -> [TNode]
 children (INode _ _ list) = concat $ map getNodes list
 
-{-
-data Node = Node  { lhv    :: Word32
-                  , ptr    :: Maybe [HTree]
-                  , mbr    :: MBR
-                  , nType  :: NodeType
-                  } deriving (Show)
-
-data HTree = HTree [Node] deriving (Show)
-
-instance Eq Node where
-    (==) h1 h2 = lhv h1 == lhv h2
-
-instance Ord Node where
-    (<=) h1 h2 = lhv h1 <= lhv h2
-
-numChild :: Int
-numChild = 4
-
-numLeaf :: Int
-numLeaf = 4
--}
---max number of intersecting rectangles.
-maxNum :: Word16
-maxNum = 4
+--returns search list
+search :: TNode -> Rect -> [Rect]
 {-
 --returns a list of rectangles that intersect query window.
 search :: HTree -> Rect -> [Rect]
