@@ -6,19 +6,17 @@ module Rect( Rect(..)
            , createMBR
            ) where
 
-import Data.Word
-import Data.Bits
-import Test.QuickCheck
 import HilbertFunction
 
-type Point = (Word32, Word32)
+type Point = (Int, Int)
 -- unlike the data inputs, we should only need 4 datapoints
 -- the lower and upper bounds of x and y
-data Rect = Rect { xMin :: Word32
-                 , yMin :: Word32
-                 , xMax :: Word32
-                 , yMax :: Word32
+data Rect = Rect { xMin :: Int
+                 , yMin :: Int
+                 , xMax :: Int
+                 , yMax :: Int
                  } deriving (Show)
+
 
 -- creating a test for equality for Rects
 instance Eq Rect where
@@ -37,10 +35,11 @@ createRect :: [Int] -> Rect
 createRect [x1,y1,x2,y2,x3,y3,x4,y4] = Rect xmin ymin xmax ymax where
     xx = [x1,x2,x3,x4]
     yy = [y1,y2,y3,y4]
-    xmin = fromIntegral (minimum xx) :: Word32
-    ymin = fromIntegral (minimum yy) :: Word32
-    xmax = fromIntegral (maximum xx) :: Word32
-    ymax = fromIntegral (maximum yy) :: Word32
+    xmin = fromIntegral (minimum xx) :: Int
+    ymin = fromIntegral (minimum yy) :: Int
+    xmax = fromIntegral (maximum xx) :: Int
+    ymax = fromIntegral (maximum yy) :: Int
+createRect _ = error "dimensions are incorrect"
 
 --finde the center of the rectangle
 center :: Rect -> Point
@@ -70,6 +69,6 @@ createMBR r1 r2 =
         yMax = max (yMax r1) (yMax r2) }
 
 --get the hilbert value for a particular rectangle.  
-hlbRect :: Rect -> Word32
+hlbRect :: Rect -> Int
 hlbRect = hlb . center where
     hlb (x,y) = hilbert x y
