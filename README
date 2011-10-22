@@ -5,3 +5,22 @@ Class: CS240h
 
 Lab 2, Hilbert R trees
 
+unfortunately I did not have enough time to finish this project 
+satisfactorily, but it should be working. This week happend to 
+Be the week in which all of my other classes also had projects 
+due, and this being my fun class, had to take second priority.
+The missing parts are the reshuffling and the quickchecks. I 
+also apologize for the late final turn in... I pretty much have
+had minimal sleep all week.  Thanks for grading this regardless!
+
+-Chris
+
+To build: ghc --make -Wall-Werror RTree.hs
+To run  : ./RTree <filename> (enter)
+then add 8 value rectangles that are comma separated. ctrl-d
+begins evaluating for the intersections. I am getting a weird
+hang between when I push ctrl-d to when I get output, even though
+I had some test putStrLn between the input and calculation, though
+this could be my computer, it's been acting a bit strange with ghci
+recently (like 10000+ error messages during compile). This should pass
+all the Werror and Wall tests.  
